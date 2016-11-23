@@ -190,13 +190,34 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    if (iterator===undefined){
+      iterator=_.identity;
+    }
+    return _.reduce(collection,function(pre,cur){
+      if (!pre){
+        return false;
+      }else{
+        if(iterator(cur)){
+          return true;
+        }else{
+          return false;
+        }
+      }     
+    },true);
   };
+
+
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
-  };
+    iterator = iterator || _.identity;
+    return !_.every(collection,function(item){
+      return !iterator(item);
+    });
+  }
+
 
 
   /**
@@ -218,11 +239,27 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+    var len = arguments.length;
+    for (var i = 1; i< len; i++){
+      for (var prop in arguments[i]){
+        arguments[0][prop]=arguments[i][prop];
+      }
+    }
+    return arguments[0];
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+    var argArray = Array.prototype.slice.call(arguments);
+    for(var i = 1; i<argArray.length; i++){
+      for(var prop in argArray[i]){
+        if (obj[prop]===undefined){
+          obj[prop]=argArray[i][prop];
+        }
+      }
+    }
+    return obj;
   };
 
 
@@ -248,7 +285,7 @@
     return function() {
       if (!alreadyCalled) {
         // TIP: .apply(this, arguments) is the standard way to pass on all of the
-        // infromation from one function call to another.
+        // information from one function call to another.
         result = func.apply(this, arguments);
         alreadyCalled = true;
       }
@@ -256,6 +293,7 @@
       return result;
     };
   };
+
 
   // Memorize an expensive function's results by storing them. You may assume
   // that the function only takes primitives as arguments.
@@ -266,7 +304,22 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    // should remember the arguments passed in
+    // if arguments passed in before, return that value
+    var cache={};
+    var memo = function(arg){
+      var argString = Array.prototype.slice.call(arguments).toString();
+      for (var i=0;i<arguments.length;i++){
+        argString= argString.concat(typeof(arguments[i]));
+      }
+      if(cache[argString]===undefined){
+        cache[argString] = func.apply(this,arguments);
+      }
+      return cache[argString];
+    };
+    return memo;
   };
+
 
   // Delays a function for the given number of milliseconds, and then calls
   // it with the arguments supplied.
@@ -275,6 +328,10 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+    var args = Array.prototype.slice.call(arguments,2);
+    setTimeout(function(){
+      func.apply(this,args);
+    },wait);
   };
 
 
@@ -289,6 +346,16 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+    var arr = Array.prototype.slice.call(array);
+    //generate a random number within the length of the array
+    //Math.random() * (max - min) + min;
+    _.each(arr,function(item,index){
+      // do a swap position with a random item in array
+      var randIndex = Math.floor(Math.random()*arr.length);
+      arr[index]=arr[randIndex];
+      arr[randIndex]=item;
+    });
+    return arr;
   };
 
 
