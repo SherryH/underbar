@@ -409,6 +409,13 @@
           return 0;
         });
 
+      }else{
+        //if iterator is a string
+        collection.sort(function(a,b){
+          if (a[iterator]<b[iterator]) return -1;
+          if (a[iterator]>b[iterator]) return 1;
+          return 0;
+        });
       }    
       return collection;
 
