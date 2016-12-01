@@ -396,7 +396,25 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    //a collection of objects
+    //loop thru the items in the object
+    // if the iterator is a callback func, takes in the item, returns the property to be sorted on
+
+      if (typeof iterator === 'function'){
+        // sort by iterator(item), from smallest to biggest
+        //use sort method
+        collection.sort(function(a,b){
+          if (iterator(a)<iterator(b)) return -1;
+          if (iterator(a)>iterator(b)) return 1;
+          return 0;
+        });
+
+      }    
+      return collection;
+
+
   };
+
 
   // Zip together two or more arrays with elements of the same index
   // going together.
