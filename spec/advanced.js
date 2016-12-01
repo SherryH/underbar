@@ -14,7 +14,6 @@
         };
 
         var reversedStrings = _.invoke(['dog', 'cat'], reverse);
-
         expect(reversedStrings).to.eql(['god', 'tac']);
       });
 

@@ -370,6 +370,25 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+    //take a collection
+    //apply the functionOrKey function with the args to all elem
+    //
+    return _.map(collection,function(elem){
+       //debugger;
+       //check to see if functionOrKey is a function or not
+       //if it is a function, apply
+       //if it is not (ie.a key), assume the key is a method of the elem
+       // call elem[key]
+       var fn = (typeof functionOrKey === 'function')? functionOrKey : elem[functionOrKey];
+       return fn.apply(elem,args);
+  
+       
+       // if (typeof functionOrKey === 'function'){
+       //    return funcftionOrKey.apply(elem,args);
+       // }else{
+       //    return elem[functionOrKey].apply(elem,args);
+       // } 
+    });
   };
 
   // Sort the object's values by a criterion produced by an iterator.
