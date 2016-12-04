@@ -286,7 +286,7 @@
       if (!alreadyCalled) {
         // TIP: .apply(this, arguments) is the standard way to pass on all of the
         // information from one function call to another.
-        result = func.apply(this, arguments);
+        result = func.apply(null, arguments);
         alreadyCalled = true;
       }
       // The new function always returns the originally computed result.
@@ -399,24 +399,30 @@
     //a collection of objects
     //loop thru the items in the object
     // if the iterator is a callback func, takes in the item, returns the property to be sorted on
+    var fn = (typeof iterator === 'function')?function(item){return iterator(item);}:function(item){return item[iterator];};
+    collection.sort(function(a,b){
+      if(fn(a)<fn(b)) return -1
+      if (fn(a)>fn(b)) return 1
+      return 0;  
+    });
 
-      if (typeof iterator === 'function'){
-        // sort by iterator(item), from smallest to biggest
-        //use sort method
-        collection.sort(function(a,b){
-          if (iterator(a)<iterator(b)) return -1;
-          if (iterator(a)>iterator(b)) return 1;
-          return 0;
-        });
+      // if (typeof iterator === 'function'){
+      //   // sort by iterator(item), from smallest to biggest
+      //   //use sort method
+      //   collection.sort(function(a,b){
+      //     if (iterator(a)<iterator(b)) return -1;
+      //     if (iterator(a)>iterator(b)) return 1;
+      //     return 0;
+      //   });
 
-      }else{
-        //if iterator is a string
-        collection.sort(function(a,b){
-          if (a[iterator]<b[iterator]) return -1;
-          if (a[iterator]>b[iterator]) return 1;
-          return 0;
-        });
-      }    
+      // }else{
+      //   //if iterator is a string
+      //   collection.sort(function(a,b){
+      //     if (a[iterator]<b[iterator]) return -1;
+      //     if (a[iterator]>b[iterator]) return 1;
+      //     return 0;
+      //   });
+      // }    
       return collection;
 
 
@@ -429,6 +435,30 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    //use array.concat to join corresponding 2 items together
+    //take in a list of the arguments
+    //check which arguments have longest length
+    //loop thru according to that length
+    var maxSubArrayLen=0;
+    var finalArr=[];
+    var arr = Array.apply(null,arguments);
+    _.each(arr,function(item,index){
+      maxSubArrayLen = (item.length>maxSubArrayLen)? item.length: maxSubArrayLen;
+    });
+    //for every subarray in the argument
+    // take the first elem from each sub array
+    //concate them together into an individual array
+    //push to the final array
+    //repeat until the last elem in longest subarray
+    
+    for (var j=0; j< maxSubArrayLen;j++){
+      var indarray = [];
+        for (var i = 0; i < arr.length; i++){
+          indarray.push(arr[i].shift());
+        }   
+      finalArr.push(indarray);
+    }
+    return finalArr;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -436,16 +466,52 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    var arr = (result===undefined)?[]:result;
+    _.each(nestedArray,function(subArray){    
+      if (Array.isArray(subArray)){
+        _.flatten(subArray,arr);
+      } else{
+        arr.push(subArray);
+      }
+    });
+    return arr;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    var inputArrays = Array.from(arguments);
+    var minSubArray = _.reduce(inputArrays,function(pre,cur){
+      return (pre.length<cur.length)? pre : cur;
+    });
+    //use filter to check whether the item is present in all arrays
+    //check first elem in first array, if not present in all arry
+    // take out that elem from present arrays
+    // repeat for rest of elem in array
+    //until 1 array is empty
+    return _.filter(minSubArray,function(item){
+      //check to see if this item is present in all subArrays in inputArray
+      return _.every(inputArrays,function(subArray){
+        //if the item is present, return true. 
+        //when the item is present in all subArray, _.every will return true
+        return (_.indexOf(subArray,item)===-1)?false:true;
+      });
+    });
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+    //get the other arrays
+    var otherArrays = Array.prototype.slice.call(arguments,1);
+    //for each of the elem in the first array
+    // check against the other arrays
+    // if it is present in some of the other arrays, dun return it
+    return _.reject(array,function(item){
+      return _.some(otherArrays,function(subArray){
+        return (_.indexOf(subArray,item)!==-1)?true:false;
+      });
+    });
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
