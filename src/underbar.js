@@ -140,19 +140,19 @@
   // Reduces an array or object to a single value by repetitively calling
   // iterator(accumulator, item) for each item. accumulator should be
   // the return value of the previous iterator call.
-  //  
+  //
   // You can pass in a starting value for the accumulator as the third argument
   // to reduce. If no starting value is passed, the first element is used as
   // the accumulator, and is never passed to the iterator. In other words, in
   // the case where a starting value is not passed, the iterator is not invoked
   // until the second element, with the first element as its second argument.
-  //  
+  //
   // Example:
   //   var numbers = [1,2,3];
   //   var sum = _.reduce(numbers, function(total, number){
   //     return total + number;
   //   }, 0); // should be 6
-  //  
+  //
   //   var identity = _.reduce([5], function(total, number){
   //     return total + number * number;
   //   }); // should be 5, regardless of the iterator function passed in
@@ -169,7 +169,7 @@
         skipFirst = false;
       }else{
         pre = iterator(pre,value);
-      }      
+      }
     });
     return pre;
   };
@@ -202,7 +202,7 @@
         }else{
           return false;
         }
-      }     
+      }
     },true);
   };
 
@@ -274,26 +274,18 @@
   // Return a function that can be called at most one time. Subsequent calls
   // should return the previously returned value.
   _.once = function(func) {
-    // TIP: These variables are stored in a "closure scope" (worth researching),
-    // so that they'll remain available to the newly-generated function every
-    // time it's called.
-    var alreadyCalled = false;
-    var result;
+    var alreadycalled = false;
+    var returnVal;
 
-    // TIP: We'll return a new function that delegates to the old one, but only
-    // if it hasn't been called before.
-    return function() {
-      if (!alreadyCalled) {
-        // TIP: .apply(this, arguments) is the standard way to pass on all of the
-        // information from one function call to another.
-        result = func.apply(null, arguments);
-        alreadyCalled = true;
+    return function(){
+      if (!alreadycalled){
+        alreadycalled = true;
+        returnVal = func.apply(this,arguments);
       }
-      // The new function always returns the originally computed result.
-      return result;
-    };
-  };
+      return returnVal;
+    }
 
+  };
 
   // Memorize an expensive function's results by storing them. You may assume
   // that the function only takes primitives as arguments.
@@ -304,20 +296,19 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
-    // should remember the arguments passed in
-    // if arguments passed in before, return that value
-    var cache={};
-    var memo = function(arg){
-      var argString = Array.prototype.slice.call(arguments).toString();
-      for (var i=0;i<arguments.length;i++){
-        argString= argString.concat(typeof(arguments[i]));
+    var argObj = {};
+
+    return function(){
+      var argStr = JSON.stringify(arguments);
+
+      if(!argObj[argStr]){
+        argObj[argStr] = func.apply(this,arguments);
       }
-      if(cache[argString]===undefined){
-        cache[argString] = func.apply(this,arguments);
-      }
-      return cache[argString];
+      return argObj[argStr];
     };
-    return memo;
+
+
+
   };
 
 
@@ -328,10 +319,11 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
-    var args = Array.prototype.slice.call(arguments,2);
+    var args = Array.from(arguments).slice(2);
     setTimeout(function(){
       func.apply(this,args);
     },wait);
+
   };
 
 
@@ -381,13 +373,13 @@
        // call elem[key]
        var fn = (typeof functionOrKey === 'function')? functionOrKey : elem[functionOrKey];
        return fn.apply(elem,args);
-  
-       
+
+
        // if (typeof functionOrKey === 'function'){
        //    return funcftionOrKey.apply(elem,args);
        // }else{
        //    return elem[functionOrKey].apply(elem,args);
-       // } 
+       // }
     });
   };
 
@@ -403,7 +395,7 @@
     collection.sort(function(a,b){
       if(fn(a)<fn(b)) return -1
       if (fn(a)>fn(b)) return 1
-      return 0;  
+      return 0;
     });
 
       // if (typeof iterator === 'function'){
@@ -422,7 +414,7 @@
       //     if (a[iterator]>b[iterator]) return 1;
       //     return 0;
       //   });
-      // }    
+      // }
       return collection;
 
 
@@ -450,12 +442,12 @@
     //concate them together into an individual array
     //push to the final array
     //repeat until the last elem in longest subarray
-    
+
     for (var j=0; j< maxSubArrayLen;j++){
       var indarray = [];
         for (var i = 0; i < arr.length; i++){
           indarray.push(arr[i].shift());
-        }   
+        }
       finalArr.push(indarray);
     }
     return finalArr;
@@ -467,7 +459,7 @@
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
     var arr = (result===undefined)?[]:result;
-    _.each(nestedArray,function(subArray){    
+    _.each(nestedArray,function(subArray){
       if (Array.isArray(subArray)){
         _.flatten(subArray,arr);
       } else{
@@ -492,7 +484,7 @@
     return _.filter(minSubArray,function(item){
       //check to see if this item is present in all subArrays in inputArray
       return _.every(inputArrays,function(subArray){
-        //if the item is present, return true. 
+        //if the item is present, return true.
         //when the item is present in all subArray, _.every will return true
         return (_.indexOf(subArray,item)===-1)?false:true;
       });
@@ -519,6 +511,22 @@
   // on this function.
   //
   // Note: This is difficult! It may take a while to implement.
+  /*
+    - Arguments passed to the throttled function should be passed to the original function.
+    - The throttled function should always return the most recently returned value of the original function.
+    - If the wait period is 100ms and the function was last called 30ms ago, another call to the throttled function should schedule a call for 0ms after the wait period is over.
+  */
+  // ** need to stop the returned function being executed within the wait time
   _.throttle = function(func, wait) {
+    var toWait = false;
+    return function() {
+      if (!toWait) {
+        toWait = true;
+        func();
+        setTimeout(function() {
+          toWait = false;
+        }, wait);
+      }
+    };
   };
 }());
