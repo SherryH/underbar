@@ -453,20 +453,35 @@
     return finalArr;
   };
 
+  _.zip = () =>{
+    //find the longest array item
+    var longest = array.reduce((pre, cur)=>{
+      return pre.length > cur.length? pre: cur;
+    }, []);
+    // zip
+    // use the longest array as counter
+    // 2 maps to return nested array
+    return longest.map((a, counter)=>{
+      return array.map((subArray, ind)=>{
+        return subArray[counter];
+      });
+    });
+  };
+
   // Takes a multidimensional array and converts it to a one-dimensional array.
   // The new array should contain all elements of the multidimensional array.
   //
   // Hint: Use Array.isArray to check if something is an array
-  _.flatten = function(nestedArray, result) {
-    var arr = (result===undefined)?[]:result;
-    _.each(nestedArray,function(subArray){
-      if (Array.isArray(subArray)){
-        _.flatten(subArray,arr);
-      } else{
-        arr.push(subArray);
+  _.flatten = function(nestedArray, result = []) {
+    _.each(nestedArray, (arrItem)=>{
+      console.log(arrItem, result);
+      if (Array.isArray(arrItem)) {
+        _.flatten(arrItem, result);
+      } else {
+        result.push(arrItem);
       }
     });
-    return arr;
+    return result;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
